@@ -291,16 +291,10 @@ class SpecialContact extends UnlistedSpecialPage {
 
 		$fromAddress = $formData['FromAddress'];
 		$fromName = $formData['FromName'];
-		if ( !$fromAddress ) {
+		$senderAddress = $contactSender;
+		if ( $fromAddress && $this->getConfig()->get( 'UserEmailUseReplyTo' ) ) {
 			// No email address entered, so use $contactSender instead
-			$senderAddress = $contactSender;
-		} else {
-			// Use user submitted details
-			$senderAddress = new MailAddress( $fromAddress, $fromName );
-			if ( $this->getConfig()->get( 'UserEmailUseReplyTo' ) ) {
-				// Define reply-to address
-				$replyTo = $senderAddress;
-			}
+			$replyTo = new MailAddress( $fromAddress, $fromName );
 		}
 
 		$includeIP = isset( $config['IncludeIP'] ) && $config['IncludeIP']
