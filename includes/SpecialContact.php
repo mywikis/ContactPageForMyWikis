@@ -289,16 +289,9 @@ class SpecialContact extends UnlistedSpecialPage {
 
 		$fromAddress = $formData['FromAddress'];
 		$fromName = $formData['FromName'];
-		if ( !$fromAddress ) {
-			// No email address entered, so use $contactSender instead
-			$senderAddress = $contactSender;
-		} else {
-			// Use user submitted details
-			$senderAddress = new MailAddress( $fromAddress, $fromName );
-			if ( $wgUserEmailUseReplyTo ) {
-				// Define reply-to address
-				$replyTo = $senderAddress;
-			}
+		$senderAddress = $contactSender;
+		if ( !$fromAddress && $this->getConfig()->get( 'UserEmailUseReplyTo' ) ) {
+			$replyTo = new MailAddress( $fromAddress, $fromName );
 		}
 
 		$includeIP = isset( $config['IncludeIP'] ) && $config['IncludeIP']
