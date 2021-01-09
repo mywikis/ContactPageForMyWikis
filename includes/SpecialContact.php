@@ -170,11 +170,6 @@ class SpecialContact extends UnlistedSpecialPage {
 				'default' => $subject,
 			],
 		] + $additional + [
-			'CCme' => [
-				'label-message' => 'emailccme',
-				'type' => 'check',
-				'default' => $this->getUser()->getBoolOption( 'ccmeonemails' ),
-			],
 			'FormType' => [
 				'class' => 'HTMLHiddenField',
 				'label' => 'Type',
@@ -429,28 +424,6 @@ class SpecialContact extends UnlistedSpecialPage {
 			wfDebug( __METHOD__ . ': got error from UserMailer: ' .
 				$mailResult->getMessage( false, false, 'en' )->text() . "\n" );
 			return [ $mailResult->getMessage( 'contactpage-usermailererror', false, $language ) ];
-		}
-
-		// if the user requested a copy of this mail, do this now,
-		// unless they are emailing themselves, in which case one copy of the message is sufficient.
-		if ( $formData['CCme'] && $fromAddress ) {
-			$cc_subject = $this->msg( 'emailccsubject', $contactRecipientUser->getName(), $subject )->text();
-			if ( Hooks::run( 'ContactForm',
-				[ &$senderAddress, &$contactSender, &$cc_subject, &$text, $this->formType, $formData ] )
-			) {
-				wfDebug( __METHOD__ . ': sending cc mail from ' . $contactSender->toString() .
-					' to ' . $senderAddress->toString() . "\n"
-				);
-				$ccResult = UserMailer::send( $senderAddress, $contactSender, $cc_subject, $text );
-				if ( !$ccResult->isOK() ) {
-					// At this stage, the user's CC mail has failed, but their
-					// original mail has succeeded. It's unlikely, but still, what to do?
-					// We can either show them an error, or we can say everything was fine,
-					// or we can say we sort of failed AND sort of succeeded. Of these options,
-					// simply saying there was an error is probably best.
-					return [ $ccResult->getMessage( 'contactpage-usermailererror', false, $language ) ];
-				}
-			}
 		}
 
 		Hooks::run( 'ContactFromComplete', [ $contactRecipientAddress, $replyTo, $subject, $text ] );
